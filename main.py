@@ -1,5 +1,4 @@
 #!usr\bin\kivy
-# -*- coding: utf-8 -*-
 __version__ = "1.0"
 
 import kivy
@@ -7,19 +6,18 @@ import kivy
 kivy.require('1.7.2')
 
 from sys import exit
-from random import sample, choice 
+from random import sample, choice
 
 from kivy.app import App
-from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.checkbox import CheckBox
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.popup import Popup
+from kivy.clock import Clock
 from kivy.uix.screenmanager import Screen, ScreenManager
 
-en_states_l1 = {"Austria": "Vienna", "Great Britain": "London",
+states_level1 = {"Austria": "Vienna", "Great Britain": "London",
                  "Germany": "Berlin", "Ireland": "Dublin",
                  "Luxembourg": "Luxembourg", "Monaco": "Monaco",
                  "Netherlands": "Amsterdam", "France": "Paris",
@@ -82,7 +80,7 @@ states_level3 = {"Belarus": "Minsk", "Moldova": "Chisinau",
                  "North Korea": "Pyongyang", "Bolivia": "Sucre",
                  "Nigeria": "Abuja"}
 
-states_level4 = {"Bahamas": "Nassau", "Bahrain": "Manama", 
+states_level4 = {"Bahamas": "Nassau", "Bahrain": "Manama",
                  "Maldives": "Male", "Benin": "Porto-Novo",
                  "Bhutan": "Thimphu", "Laos": "Vientiane",
                  "Botswana": "Gaborone", "Burkina Faso": "Ouagadougou",
@@ -104,7 +102,8 @@ states_level4 = {"Bahamas": "Nassau", "Bahrain": "Manama",
 
 states_level5 = {"Kiribati": "Tarawa", "Marshall Islands": "Majuro",
                  "Antigua and Barbuda": "Saint John's", "Tonga": "Nuku'alofa",
-                 "Saint Vincent and the Grenadines": "Kingstown", "Tuvalu": "Funafuti",
+                 "Saint Vincent and the Grenadines": "Kingstown",
+                 "Tuvalu": "Funafuti",
                  "Brunei": "Bandar Seri Begawan", "Cabo Verde": "Praia",
                  "Solomon Islands": "Honiara", "Samoa": "Apia",
                  "Myanmar": "Naypyidaw", "East Timor": "Dili",
@@ -118,7 +117,8 @@ states_level5 = {"Kiribati": "Tarawa", "Marshall Islands": "Majuro",
                  "Sierra Leone": "Freetown", "Tanzania": "Dodoma",
                  "Togo": "Lome", "Grenada": "St. George's",
                  "Dominica": "Roseau", "Dominican Republic": "Santo Domingo",
-                 "Saint Kitts and Nevis": "Basseterre", "Saint Lucia": "Castries",
+                 "Saint Kitts and Nevis": "Basseterre",
+                 "Saint Lucia": "Castries",
                  "Trindad and Tobago": "Port of Spain", "Vanuatu": "Port Vila",
                  "Barbados": "Bridgetown", "South Sudan": "Juba"}
 
@@ -154,17 +154,19 @@ class MenuWindow(Screen):
     def quit(self, button):
         exit(0)
 
+
 class AboutGame(Screen):
 
     def __init__(self, **kwargs):
         super(AboutGame, self).__init__(**kwargs)
-        aboutgamebox = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        aboutgamebox = BoxLayout(orientation='vertical',
+                                 padding=10, spacing=10)
         aboutlbl = Label(text="This is 'Capitals' quiz")
         aboutgamebox.add_widget(aboutlbl)
         backbtn = Button(text='Back to Menu')
         backbtn.bind(on_press=self.back_to_menu)
         aboutgamebox.add_widget(backbtn)
-        self.add_widget(aboutgamebox)		
+        self.add_widget(aboutgamebox)
 
     def back_to_menu(self, button):
         self.manager.current = 'menu'
@@ -208,12 +210,13 @@ class TimeLabel(Label):
 
     def update(self, *args):
         self.time -= 1
-        self.text = "You have %d seconds to answer" %(self.time)
+        self.text = "You have %d seconds to answer" % (self.time)
 
 
 class QuizWindow(BoxLayout):
     def __init__(self, **kwargs):
-        super(QuizWindow, self).__init__(orientation='vertical', padding=20, spacing=15, **kwargs)
+        super(QuizWindow, self).__init__(orientation='vertical',
+                                         padding=20, spacing=15, **kwargs)
         self.score = 0
         self.level = 1
         self.questions = []
@@ -221,7 +224,7 @@ class QuizWindow(BoxLayout):
 
     def ansresult(self, instance):
         # invokes by pressing button Answer
-        
+
         # stops all clock shedules
         Clock.unschedule(self.time_label.update)
         Clock.unschedule(self.timeend)
@@ -235,18 +238,16 @@ class QuizWindow(BoxLayout):
                     self.score += 1
                     if self.score % 10 == 0:
                         self.level += 1
-                        if self.level == 6:
-                            text = "You win!"
-                            btnaction = self.gameover
-                    text = "Congratulations! Your score is %d" %(self.score)
-                    
+                    text = "Congratulations! Your score is %d" % (self.score)
+
                     btnaction = self.nextround
                 else:
-                    text = "You are lost!"
+                    text = "You lost!"
                     btnaction = self.gameover
 
-        content = Button(text=text)				
-        self.answerresult = Popup(title="", content=content, size_hint=(.8, .5))
+        content = Button(text=text)
+        self.answerresult = Popup(title="", content=content,
+                                  size_hint=(.8, .5), auto_dismiss=False)
         content.bind(on_press=btnaction)
         self.answerresult.open()
 
@@ -259,8 +260,12 @@ class QuizWindow(BoxLayout):
         # invokes new window with ability
         # to start new game or exit
         self.answerresult.dismiss()
+        if self.level == 6:
+            message_text = "Congratulations! You won this game!"
+        else:
+            message_text = "You lost!"
         box = BoxLayout(orientation='vertical')
-        box.add_widget(Label(text="You are lost!", size_hint=(.8, 1)))
+        box.add_widget(Label(text=message_text, size_hint=(.8, 1)))
         box.add_widget(Label(text="Do you want to start new game?"))
         selectbuttons = BoxLayout(spacing=10)
         yesbutton = Button(text="Yes")
@@ -273,7 +278,7 @@ class QuizWindow(BoxLayout):
         self.gameoverpopup = Popup(title="", content=box, size_hint=(.8, .5))
         self.gameoverpopup.open()
 
-    def newgame (self, instance):
+    def newgame(self, instance):
         self.score = 0
         self.level = 1
         self.questions = []
@@ -283,10 +288,9 @@ class QuizWindow(BoxLayout):
 
     def exitgame(self, instance):
         exit(0)
-		
+
     def round(self):
         # first game round, appears when game starts
-        
         if self.level == 1:
             self.states = states_level1
         elif self.level == 2:
@@ -309,31 +313,33 @@ class QuizWindow(BoxLayout):
 
         # player's score and level widget
         scorelayout = BoxLayout(padding=10, size_hint=(1, .2))
-        self.scorelabel = Label(text="Score: %d" %(self.score))
-        self.levellabel = Label(text="Level: %d" %(self.level))
+        self.scorelabel = Label(text="Score: %d" % (self.score))
+        self.levellabel = Label(text="Level: %d" % (self.level))
         scorelayout.add_widget(self.scorelabel)
         scorelayout.add_widget(self.levellabel)
         self.add_widget(scorelayout)
 
         # question widget
-        self.question = Label(text="What is the capital of %s?" %(self.guess_state), 
+        self.question = Label(text="What is the capital of %s?"
+                              % (self.guess_state),
                               size_hint=(1, .3))
         self.add_widget(self.question)
 
         # variants of answer widget
-        self.togglebuttonlist = []		
+        self.togglebuttonlist = []
         for i in self.guess_list:
-            self.btn = ToggleButton(text=self.states[i], group='cap', size_hint=(1, .1))
+            self.btn = ToggleButton(text=self.states[i], group='cap',
+                                    size_hint=(1, .1))
             self.add_widget(self.btn)
             self.togglebuttonlist.append(self.btn)
 
         # label with remaining time for the answer
         self.time_label = TimeLabel()
-        Clock.schedule_interval(self.time_label.update, 1)		
+        Clock.schedule_interval(self.time_label.update, 1)
         self.add_widget(self.time_label)
 
         # button, that submits user's answer
-        answerbtn = Button(text="Answer",size_hint=(.45, .1))
+        answerbtn = Button(text="Answer", size_hint=(.45, .1))
         answerbtn.bind(on_press=self.ansresult)
         self.add_widget(answerbtn)
 
